@@ -7,6 +7,7 @@ public static class RobotArmInput
     public static float Joint2 => Axis(Key.W, Key.S);
     public static float Joint3 => Axis(Key.E, Key.D);
 
+    public static bool Grip => Keyboard.current != null && Keyboard.current.spaceKey.isPressed;
     public static bool ResetPressed => Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame;
 
     static float Axis(Key positive, Key negative)
