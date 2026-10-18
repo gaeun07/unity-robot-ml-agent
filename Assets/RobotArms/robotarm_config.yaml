@@ -81,9 +81,11 @@
     
     # 몇 스텝마다 학습 상황(평균 보상 등)을 콘솔과 TensorBoard에 기록할지.
     summary_freq: 10000
-  
-  
-  RobotArmPickPlace: # Unity의 Behavior Name과 똑같아야 연결된다
+    
+    # ── 4장: 집어서 옮겨 놓기 (관측 16 / 연속 3 + 이산 1) ───────────────
+    # 가서 → 집고 → 옮기고 → 놓기. 한 판에 할 일이 네 배로 늘었다.
+    # 연속 3 = 관절 3개의 회전 값, 이산 1 = "잡기/놓기" 같은 버튼형 선택.
+  RobotArmPickPlace:              # Unity의 Behavior Name과 똑같아야 연결된다
     trainer_type: ppo             # 학습 알고리즘 종류. 3장과 같은 PPO를 쓴다
     
     
@@ -118,7 +120,7 @@
     
     
     reward_signals:
-      extrinsic: # 코드의 AddReward / SetReward로 준 보상
+      extrinsic:                  # 코드의 AddReward / SetReward로 준 보상
         # 미래 보상을 얼마나 중요하게 볼지.
         # "놓기" 보상은 한참 뒤에 나오므로 먼 미래를 챙기는 0.99가 특히 중요하다.
         gamma: 0.99
@@ -138,3 +140,43 @@
     
     # 학습 기록을 남기는 간격. 전체 학습이 길어진 만큼 간격도 늘렸다.
     summary_freq: 20000
+    
+    
+  # ── 5장: 집게로 교체 (관측 19 / 연속 3 + 이산 1) ────────────────────
+  # 과제는 4장과 같다. 집는 방식만 물리로 바뀌었다.
+  # 4장은 "가까이 가서 잡기 누르면 붙음"이었다.
+  # 5장은 집게가 실제로 물체를 끼워야 잡힌다. 관측 3개는 집게 상태를 알려주는 값이다.
+  RobotArmGripper:                # Unity의 Behavior Name과 똑같아야 연결된다
+    trainer_type: ppo
+    
+    hyperparameters:
+      # 아래 값은 모두 4장과 같다.
+      # 과제 구조(가서 → 집고 → 옮기고 → 놓기)가 같으니 학습 방식도 그대로 둔다.
+      batch_size: 2048            # 한 번 학습할 때 참고하는 경험 수
+      buffer_size: 20480          # 학습 전에 모아두는 경험 총량 (batch의 10배)
+      learning_rate: 3.0e-4       # 신경망을 바꾸는 보폭
+      beta: 5.0e-3                # 탐험 강도
+      epsilon: 0.2                # 한 번에 행동 방식이 바뀔 수 있는 한계
+      lambd: 0.95                 # 실제 보상 vs 예측 중 어느 쪽을 더 믿을지
+      num_epoch: 3                # 버퍼를 반복해서 공부하는 횟수
+      learning_rate_schedule: linear
+      beta_schedule: constant
+      epsilon_schedule: linear
+    
+    network_settings:
+      normalize: true             # 관측 값 범위를 자동으로 맞춘다
+      hidden_units: 256           # 한 층의 뉴런 수
+      num_layers: 2               # 신경망 층 수
+    
+    reward_signals:
+      extrinsic:
+        gamma: 0.99               # 먼 미래 보상까지 챙긴다
+        strength: 1.0             # 보상 배율
+    
+    # 전체 학습 길이. 4장(500만)보다 늘렸다.
+    # 이제 "잡기"가 버튼 하나로 끝나지 않는다. 집게 위치와 각도가 맞아야 성공한다.
+    # 그래서 성공 경험 자체가 드물게 나오고, 그만큼 배우는 데 오래 걸린다.
+    max_steps: 8000000
+    
+    time_horizon: 512             # 과제 길이가 4장과 같으므로 그대로
+    summary_freq: 20000           # 학습 기록 간격
