@@ -100,6 +100,7 @@ namespace Humanoid
                 float angle = HumanoidMath.ActionToAngle(actions[i], r.x, r.y);
                 if (_dofIsZ[i]) z = angle; else x = angle;
 
+                // 한 관절의 X·Z가 다 모이면 그 관절에 넣는다.
                 if (i == JointCount - 1 || _dofPart[i + 1] != _dofPart[i])
                 {
                     _dofPart[i].SetTarget(x, z);

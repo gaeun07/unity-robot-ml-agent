@@ -38,6 +38,25 @@ namespace Humanoid
             touchingGround = false;
         }
 
+        // 바닥에 닿은 점이 수평으로 미끄러지는 속도(m/s). 닿아 있지 않으면 0.
+        // 닿은 점 = 상자 바닥 네 모서리 중 가장 낮은 것. 부품 중심 속도로 재면 뒤꿈치→발끝으로 구르는 정상 동작도 미끄러짐으로 잡힌다.
+        public float SlipSpeed
+        {
+            get
+            {
+                if (!touchingGround) return 0f;
+                var box = GetComponent<BoxCollider>();
+                Vector3 lowest = transform.position;
+                for (int i = 0; i < 4; i++)
+                {
+                    Vector3 corner = transform.TransformPoint(box.center + Vector3.Scale(box.size * 0.5f, new Vector3(i % 2 * 2 - 1, -1, i / 2 * 2 - 1)));
+                    if (i == 0 || corner.y < lowest.y) lowest = corner;
+                }
+                Vector3 v = rb.GetPointVelocity(lowest);
+                return new Vector2(v.x, v.z).magnitude;
+            }
+        }
+
         // Rigidbody가 없는 것(움직이지 않는 것) = 바닥으로 본다.
         void OnCollisionStay(Collision c) { if (c.rigidbody == null) touchingGround = true; }
         void OnCollisionExit(Collision c) { if (c.rigidbody == null) touchingGround = false; }

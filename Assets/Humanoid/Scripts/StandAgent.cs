@@ -1,7 +1,6 @@
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
-using Unity.Properties;
 using UnityEngine;
 
 namespace Humanoid
@@ -27,24 +26,24 @@ namespace Humanoid
         public override void OnEpisodeBegin()
         {
             body.ResetBody();
-            if (_keyboard != null) _keyboard.ResetActions();
+            if (_keyboard != null) _keyboard.ResetActions();    // Heuristic일 때 이전 판의 키보드 자세가 남지 않게
         }
 
         // 관측 48개. 속도처럼 범위가 정해지지 않은 값은 yaml의 normalize: true 가 맞춰 준다.
         public override void CollectObservations(VectorSensor sensor)
         {
             Transform pelvis = body.pelvis.transform;
-            sensor.AddObservation(pelvis.position.y - transform.position.y);
-            sensor.AddObservation(HumanoidMath.DownInBody(pelvis.rotation));
-            sensor.AddObservation(pelvis.InverseTransformDirection(body.pelvis.rb.linearVelocity));
-            sensor.AddObservation(pelvis.InverseTransformDirection(body.pelvis.rb.linearVelocity));
+            sensor.AddObservation(pelvis.position.y - transform.position.y);                    // 1 골반 높이
+            sensor.AddObservation(HumanoidMath.DownInBody(pelvis.rotation));                    // 3 기울기
+            sensor.AddObservation(pelvis.InverseTransformDirection(body.pelvis.rb.linearVelocity));  // 3 속도
+            sensor.AddObservation(pelvis.InverseTransformDirection(body.pelvis.rb.angularVelocity)); // 3 회전 속도
             for (int i = 0; i < body.JointCount; i++)
             {
-                sensor.AddObservation(body.NormalizedAngle(i));
-                sensor.AddObservation(body.Rate(i) / 10f);
+                sensor.AddObservation(body.NormalizedAngle(i));                                 // 18 관절 각도
+                sensor.AddObservation(body.Rate(i) / 10f);                                      // 18 관절 속도
             }
-            sensor.AddObservation(body.footL.touchingGround);
-            sensor.AddObservation(body.footR.touchingGround);
+            sensor.AddObservation(body.footL.touchingGround);                                   // 1 왼발 접촉
+            sensor.AddObservation(body.footR.touchingGround);                                   // 1 오른발 접촉
         } // = 48
 
         public override void OnActionReceived(ActionBuffers actions)
