@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "unity": {
+      "type": "local",
+      "command": [
+        "{env:USERPROFILE}/.unity/relay/relay_win.exe",
+        "--mcp",
+        "--project-path",
+        "."
+      ],
+      "enabled": true
+    }
+  }
+}
