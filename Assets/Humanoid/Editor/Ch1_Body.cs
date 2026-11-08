@@ -177,8 +177,59 @@ namespace HumanoidEditor
             var cam = Camera.main;
             if (cam == null) return;
             Undo.RecordObject(cam.transform, "카메라");
+
+            // 기존 카메라 위치 및 로테이션 초기화
             cam.transform.position = new Vector3(2.4f, 1.5f, 3.2f);
-            cam.transform.LookAt(new Vector3(0f, 0.9f, 0f));
+            cam.transform.rotation = Quaternion.Euler(8.5f, 217f, 0f);
+
+            // HumanoidCamera 컴포넌트 추가 (GetComponent가 없으면 추가)
+            var humanoidCam = cam.GetComponent<HumanoidCamera>();
+            if (humanoidCam == null)
+            {
+                humanoidCam = cam.gameObject.AddComponent<HumanoidCamera>();
+            }
+
+            // 타겟 설정: Main Camera의 부모(보통 Humanoid 오브젝트)
+            humanoidCam.target = cam.transform.parent;
+
+            // 3인당 카메라 기본 설정
+            // pelvis 타겟 설정: Humanoid 오브젝트에서 Pelvis 트랜스폼 찾기
+            if (humanoidCam.target != null)
+            {
+                // Hierarchy에서 Pelvis 오브젝트를 찾아 타겟으로 설정
+                var pelvisObj = humanoidCam.target.transform.Find("Pelvis");
+                if (pelvisObj != null)
+                {
+                    humanoidCam.pelvis = pelvisObj.transform;
+                }
+                else
+                {
+                    // Pelvis가 없으면 target을 pelvis로 자동 설정 시도
+                    humanoidCam.target = humanoidCam.target.transform.Find("Pelvis");
+                }
+            }
+
+            // 오프셋 대신 pelvis 기반 설정 사용
+            humanoidCam.distance = 3f;
+            humanoidCam.pitch = 15f;
+            humanoidCam.yaw = 180f;
+            humanoidCam.heightOffset = 1.5f;
+
+            // 보간 속도 설정 (새 스크립트용)
+            humanoidCam.positionDampSpeed = 5f;
+            humanoidCam.rotationDampSpeed = 5f;
+
+            // 각도 제한
+            humanoidCam.minPitch = -20f;
+            humanoidCam.maxPitch = 80f;
+            humanoidCam.minYaw = 0f;
+            humanoidCam.maxYaw = 360f;
+
+            // 기존 카메라 위치 초기화 (PlaceCamera 호환성 유지)
+            cam.transform.position = new Vector3(2.4f, 1.5f, 3.2f);
+            cam.transform.rotation = Quaternion.Euler(8.5f, 217f, 0f);
+
+            Debug.Log("[Humanoid] 카메라가 휴머노이드 추적 모드로 설정되었�니다. 플레이 모드에서 휴머노이드를 따라갑니다.");
         }
 
         // 보이는 모양이 없는 부품에 상자 모양을 붙인다. 크기는 콜라이더와 같게.

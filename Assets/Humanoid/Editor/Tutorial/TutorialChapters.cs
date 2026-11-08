@@ -258,10 +258,11 @@ namespace HumanoidEditor
             s.Do("Position (0, -0.5, 0)", () => LocalPos(Area + "/Ground", new Vector3(0f, -0.5f, 0f))).Insp(Area + "/Ground", typeof(Transform), "Position");
             ch.steps.Add(s.Do("Scale (40, 1, 40)", () => T(Area + "/Ground") != null && Near(T(Area + "/Ground").localScale, new Vector3(40f, 1f, 40f))).Insp(Area + "/Ground", typeof(Transform), "Scale"));
 
-            s = new Step { title = "카메라 놓기", goal = "휴머노이드가 설 자리를 비스듬히 내려다보게 한다",
-                concept = "몸은 원점에 키 1.7m 로 선다. 카메라를 앞 오른쪽 위 (2.4, 1.5, 3.2) 에 두고 몸 가운데(0, 0.9, 0)를 보게 한다.\n" +
-                          "앞쪽(+Z)에서 보기 때문에 얼굴이 카메라를 향한다.",
-                hint = "Rotation 은 (8.5, 217, 0). 직접 맞추기 어려우면 대신 해주기.",
+            s = new Step { title = "카메라 놓기", goal = "휴머노이드를 부드럽게 따라다보는 카메라 설정",
+                concept = "카메라가 휴머노이드를 따라가며 부드럽게 회전하고 위치를 보간합니다.\n" +
+                          "초기 위치는 (2.4, 1.5, 3.2) 에서 휴머노이드를 바라보도록 설정됩니다.\n" +
+                          "플레이 모드에서 휴머노이드가 움직이면 카메라가 따라갑니다.",
+                hint = "카메라가 휴머노이드를 따라가도록 설정됩니다. 인스펙터에서 HumanoidCamera 컴포넌트의 설정을 조정할 수 있습니다.",
                 solve = Ch1_Body.PlaceCamera };
             s.Do("Main Camera 의 Position (2.4, 1.5, 3.2)", () => Camera.main != null && (Camera.main.transform.position - new Vector3(2.4f, 1.5f, 3.2f)).magnitude < 0.05f).Insp("Main Camera", typeof(Transform), "Position");
             ch.steps.Add(s.Do("Rotation (8.5, 217, 0)", () => Camera.main != null && Quaternion.Angle(Camera.main.transform.rotation, Quaternion.Euler(8.5f, 216.9f, 0f)) < 3f).Insp("Main Camera", typeof(Transform), "Rotation"));
