@@ -200,7 +200,8 @@ public class CatchMenu
         rb.freezeRotation = true;
 
         runner.AddComponent<RunnerAgent>();
-        SetupBehaviorParameters(runner, "Runner", true);
+        // Runner는 학습 시 외부 트레이너와 통신해야 하므로 Default Behavior를 사용한다.
+        SetupBehaviorParameters(runner, "Runner", false);
 
         // MaxStep: 1500 ≈ 30초 (fixedDeltaTime 0.02초 기준)
         // 15초 생존 보너트를 지급한 뒤에도 판이 자동 종료되지 않도록 여유를 둔다.

@@ -75,12 +75,7 @@ public class ChaserAgent : Agent
         float dist = Vector3.Distance(transform.position, target.position);
         if (dist <= catchDistance && !IsCatchGraceActive())
         {
-            if (ScoreManager.Instance != null)
-            {
-                ScoreManager.Instance.AddChaserScore(1);
-                ScoreManager.Instance.StartNewRound();
-            }
-            Debug.Log($"[Chaser] Caught Runner! Distance={dist:F2}");
+            CompleteCatchRound(dist);
         }
     }
 
@@ -97,6 +92,25 @@ public class ChaserAgent : Agent
             rb.linearVelocity = Vector3.zero;
 
         Debug.Log($"[Chaser] Episode state reset (catch grace: {catchGraceTime:F2}s)");
+    }
+
+    /// <summary>
+    /// Runner가 잡혔을 때 점수, 음수 보상, 새 판 시작을 한 번에 처리한다.
+    /// Runner의 페널티를 EndEpisode보다 먼저 적용해야 학습에 반영된다.
+    /// </summary>
+    void CompleteCatchRound(float distance)
+    {
+        ScoreManager manager = ScoreManager.Instance;
+        if (manager != null)
+        {
+            if (manager.runner != null)
+                manager.runner.OnCaught();
+
+            manager.AddChaserScore(1);
+            manager.StartNewRound();
+        }
+
+        Debug.Log($"[Chaser] Caught Runner! Distance={distance:F2}");
     }
 
     /// <summary>
@@ -200,11 +214,7 @@ public class ChaserAgent : Agent
             !IsCatchGraceActive())
         {
             AddReward(1.0f);
-            if (ScoreManager.Instance != null)
-            {
-                ScoreManager.Instance.AddChaserScore(1);
-                ScoreManager.Instance.StartNewRound();
-            }
+            CompleteCatchRound(Vector3.Distance(transform.position, target.position));
         }
     }
 

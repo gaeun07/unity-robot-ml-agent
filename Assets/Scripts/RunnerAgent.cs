@@ -25,10 +25,14 @@ public class RunnerAgent : Agent
     private float episodeStartedAt = 0f;
     private float survivalTimer = 0f;
     private bool hasEarnedSurvivalBonus = false;
+    private bool hasReceivedCatchPenalty = false;
 
     protected override void Awake()
     {
         base.Awake();
+
+        // Editor 창에 포커스가 없어도 학습이 멈추지 않도록 한다.
+        Application.runInBackground = true;
 
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
@@ -80,6 +84,7 @@ public class RunnerAgent : Agent
         episodeStartedAt = Time.time;
         survivalTimer = 0f;
         hasEarnedSurvivalBonus = false;
+        hasReceivedCatchPenalty = false;
 
         if (rb != null)
             rb.linearVelocity = Vector3.zero;
@@ -103,6 +108,19 @@ public class RunnerAgent : Agent
         }
 
         Debug.Log($"[Runner] Survived {survivalTimeTarget}s! Score +1 - New round started");
+    }
+
+    /// <summary>
+    /// Chaser가 Runner를 잡았을 때 종단 페널티를 한 번만 적용한다.
+    /// ScoreManager가 에피소드를 종료하기 전에 호출해야 최종 보상이 기록된다.
+    /// </summary>
+    public void OnCaught()
+    {
+        if (hasReceivedCatchPenalty) return;
+        hasReceivedCatchPenalty = true;
+
+        AddReward(-1.0f);
+        Debug.Log("[Runner] Caught! Reward -1");
     }
 
     /// <summary>
